@@ -1,0 +1,10 @@
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+dist/
+build/
+.vscode/
+*.log
+.env
+config/calibration.json

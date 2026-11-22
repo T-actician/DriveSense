@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DriveSense</title>
+<style>
+:root{--pn:rgba(6,26,46,.72);--cy:#1fb6ff;--or:#ff9a2e;--gr:#3dff8a;--tx:#9fd8ff;--dim:#5b86a6;--lvl:#1fb6ff}
+body[data-l="1"]{--lvl:#ffd23f}
+body[data-l="2"]{--lvl:#ff9a2e}
+body[data-l="3"]{--lvl:#ff3b3b}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;user-select:none}
+body{background:radial-gradient(ellipse at 50% 35%,#06223a,#020a12 72%);color:var(--tx);font-family:Bahnschrift,"Segoe UI",sans-serif;display:flex;flex-direction:column;gap:10px;padding:12px}
+body[data-l="3"]::after{content:"";position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 140px rgba(255,59,59,.6);animation:blink .5s infinite alternate}
+@keyframes blink{to{opacity:.35}}
+header{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;border:1px solid rgba(31,182,255,.25);background:var(--pn)}
+.title{font-size:20px;letter-spacing:.3em;font-weight:700;color:var(--cy)}
+.title b{color:var(--or)}
+.title span{font-size:11px;color:var(--dim);letter-spacing:.25em;margin-left:12px}
+.pw{font-size:9px;letter-spacing:.2em;color:var(--dim);margin-top:3px}
+.pw i{font-style:normal;color:var(--cy)}
+.chips{display:flex;gap:8px;align-items:center}
+.chip{padding:4px 10px;border:1px solid rgba(31,182,255,.3);font-size:11px;letter-spacing:.18em;color:var(--dim)}
+.chip.ok{color:var(--gr);border-color:var(--gr)}
+.chip.bad{color:#ff3b3b;border-color:#ff3b3b}
+button{background:var(--cy);color:#00111f;border:0;padding:8px 16px;font:700 12px Bahnschrift,"Segoe UI",sans-serif;letter-spacing:.2em;cursor:pointer}
+button:hover{filter:brightness(1.2)}
+.setwrap{position:relative}
+.icon{width:32px;height:28px;padding:0;background:transparent;color:var(--cy);border:1px solid rgba(31,182,255,.35);display:flex;align-items:center;justify-content:center}
+.icon:hover{background:rgba(31,182,255,.15);filter:none}
+.menu{display:none;position:absolute;right:0;top:36px;min-width:210px;z-index:20;background:#04182b;border:1px solid var(--cy);padding:6px}
+.menu.open{display:block}
+.mi{display:flex;justify-content:space-between;padding:8px 10px;font-size:12px;letter-spacing:.14em;cursor:pointer}
+.mi:hover{background:rgba(31,182,255,.15)}
+.mi b{color:var(--gr)}
+.mi b.off{color:#ff3b3b}
+.mi kbd{color:var(--dim);font:11px Consolas,monospace}
+main{flex:1;min-height:0;display:grid;grid-template-columns:270px 1fr 300px;gap:12px}
+.col{display:flex;flex-direction:column;gap:10px;min-height:0}
+.panel{position:relative;background:var(--pn);border:1px solid rgba(31,182,255,.18);padding:12px 14px}
+.panel::before,.panel::after{content:"";position:absolute;width:12px;height:12px;border:2px solid var(--cy)}
+.panel::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.panel::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.panel.grow{flex:1;min-height:0;display:flex;flex-direction:column}
+h3{font-size:11px;letter-spacing:.28em;color:var(--cy);margin-bottom:8px;font-weight:600}
+.row{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;color:var(--dim);letter-spacing:.14em;margin-top:7px}
+.row b{color:var(--or);font:600 15px Consolas,monospace}
+.bar{position:relative;height:6px;background:rgba(31,182,255,.14);margin-top:4px}
+.bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--cy)}
+.bar.dot i{width:6px;margin-left:-3px;background:var(--or)}
+.bar u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--or)}
+#center{display:flex;flex-direction:column;gap:10px;min-height:0}
+.vwrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.glow{width:min(100%,calc((100vh - 235px)*4/3));aspect-ratio:4/3;filter:drop-shadow(0 0 10px var(--lvl))}
+.vframe{--c:22px;--ci:calc(var(--c) - 2.4px);width:100%;height:100%;padding:4px;background:var(--lvl);transition:background .25s;clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,var(--c) 100%,0 calc(100% - var(--c)),0 var(--c))}
+.inner{position:relative;width:100%;height:100%;background:#000;overflow:hidden;clip-path:polygon(var(--ci) 0,calc(100% - var(--ci)) 0,100% var(--ci),100% calc(100% - var(--ci)),calc(100% - var(--ci)) 100%,var(--ci) 100%,0 calc(100% - var(--ci)),0 var(--ci))}
+#vid,#ov{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1)}
+#vid{object-fit:fill}
+.inner::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 1px,transparent 1px 3px)}
+.scan{position:absolute;left:0;right:0;height:90px;top:-90px;background:linear-gradient(transparent,rgba(31,182,255,.10),transparent);animation:sc 4s linear infinite;pointer-events:none}
+@keyframes sc{to{top:100%}}
+.tag{position:absolute;top:12px;left:30px;font:12px Consolas,monospace;letter-spacing:.15em;color:#fff;text-shadow:0 0 4px #000}
+.tag i{color:#ff3b3b;font-style:normal;animation:blink 1s infinite}
+#banner{position:absolute;top:0;left:0;z-index:3;display:none;padding:6px 14px;font-size:12px;letter-spacing:.16em;font-weight:700;color:#000;background:var(--lvl);border-radius:10px;white-space:nowrap;box-shadow:0 0 14px var(--lvl)}
+#calbox{position:absolute;left:0;right:0;bottom:0;padding:18px 28px 22px;text-align:center;background:linear-gradient(transparent,rgba(0,0,0,.85))}
+#cmsg{font-size:18px;letter-spacing:.12em;font-weight:700;color:#fff;margin-bottom:10px}
+#cprogw{height:6px;background:rgba(255,255,255,.2);display:none}
+#cprog{height:100%;width:0;background:var(--or)}
+.score{display:grid;grid-template-columns:150px 1fr 190px;gap:18px;align-items:center}
+.score small{font-size:10px;letter-spacing:.25em;color:var(--dim)}
+.big{font:700 44px Consolas,monospace;color:var(--lvl);line-height:1}
+.track{position:relative;height:16px;background:linear-gradient(90deg,rgba(31,182,255,.22) 0 30%,rgba(255,210,63,.22) 30% 55%,rgba(255,154,46,.22) 55% 80%,rgba(255,59,59,.22) 80% 100%)}
+.track i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--lvl);transition:width .15s}
+.track s{position:absolute;top:-3px;bottom:-3px;width:2px;background:#fff;opacity:.5}
+.zones{display:grid;grid-template-columns:30fr 25fr 25fr 20fr;margin-top:5px;font-size:9px;letter-spacing:.18em;color:var(--dim)}
+#lv{font-size:20px;font-weight:700;letter-spacing:.18em;color:var(--lvl)}
+#rs{display:block;margin-top:4px}
+#chart{width:100%;height:120px;display:block}
+#log{flex:1;overflow:auto;font:12px/1.6 Consolas,monospace;color:var(--gr)}
+#log span{color:var(--dim)}
+#log .l1{color:#ffd23f}#log .l2{color:#ff9a2e}#log .l3{color:#ff3b3b}
+</style>
+</head>
+<body data-l="0">
+<header>
+  <div>
+    <div class="title">DRIVE<b>SENSE</b><span>// DRIVER FATIGUE MONITOR</span></div>
+    <div class="pw">Powered by <i>Tactician°™</i></div>
+  </div>
+  <div class="chips">
+    <span id="chCam" class="chip">CAMERA</span>
+    <span id="chTrk" class="chip">TRACKING</span>
+    <span id="chFps" class="chip">-- FPS</span>
+    <span id="clock" class="chip">--:--:--</span>
+    <div class="setwrap">
+      <button id="btnSet" class="icon" title="Settings">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <div id="menu" class="menu">
+        <div class="mi" id="miCal"><span>Recalibrate</span><kbd>C</kbd></div>
+        <div class="mi" id="miVoice"><span>Voice alerts</span><b id="vState">ON</b></div>
+        <div class="mi" id="miTest"><span>Test voice</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+<main>
+  <section class="col">
+    <div class="panel">
+      <h3>EYES</h3>
+      <div class="row">EAR<b id="vEar">0.000</b></div>
+      <div class="bar"><i id="bEar"></i><u id="mEar"></u></div>
+      <div class="row">PERCLOS<b id="vPer">0%</b></div>
+      <div class="row">EYES CLOSED<b id="vClo">0.0s</b></div>
+      <div class="row">LONG BLINKS<b id="vLb">0</b></div>
+    </div>
+    <div class="panel">
+      <h3>MOUTH</h3>
+      <div class="row">MAR<b id="vMar">0.000</b></div>
+      <div class="bar"><i id="bMar"></i><u id="mMar"></u></div>
+      <div class="row">YAWNS<b id="vYaw">0</b></div>
+    </div>
+    <div class="panel">
+      <h3>HEAD POSE</h3>
+      <div class="row">PITCH Δ<b id="vPit">0°</b></div>
+      <div class="bar dot"><i id="bPit"></i><u id="mPit"></u></div>
+      <div class="row">YAW<b id="vYw">0°</b></div>
+      <div class="row">ROLL<b id="vRl">0°</b></div>
+      <div class="row">NODS<b id="vNod">0</b></div>
+      <div class="row">HEAD DOWN<b id="vHd">0.0s</b></div>
+    </div>
+  </section>
+
+  <section id="center">
+    <div class="vwrap">
+      <div class="glow"><div class="vframe"><div class="inner">
+        <img id="vid" src="/video" alt="">
+        <canvas id="ov"></canvas>
+        <div class="scan"></div>
+        <div class="tag"><i>●</i> LIVE &nbsp;CAM 01</div>
+        <div id="banner"></div>
+        <div id="calbox">
+          <div id="cmsg"></div>
+          <div id="cprogw"><div id="cprog"></div></div>
+          <button id="cbtn">START CALIBRATION [SPACE]</button>
+        </div>
+      </div></div></div>
+    </div>
+    <div class="panel score">
+      <div><small>FATIGUE LEVEL</small><div class="big" id="sc">--</div></div>
+      <div>
+        <div class="track"><i id="sbar"></i><s style="left:30%"></s><s style="left:55%"></s><s style="left:80%"></s></div>
+        <div class="zones"><span>NORMAL</span><span>CAUTION</span><span>WARNING</span><span>CRITICAL</span></div>
+      </div>
+      <div><div id="lv">NOT CALIBRATED</div><small id="rs"></small></div>
+    </div>
+  </section>
+
+  <section class="col">
+    <div class="panel"><h3>FATIGUE TREND · 2 MIN</h3><canvas id="chart"></canvas></div>
+    <div class="panel">
+      <h3>SESSION</h3>
+      <div class="row">ELAPSED<b id="sEl">00:00:00</b></div>
+      <div class="row">PEAK SCORE<b id="sPk">0</b></div>
+      <div class="row">CAUTION ALERTS<b id="sA1">0</b></div>
+      <div class="row">WARNING ALERTS<b id="sA2">0</b></div>
+      <div class="row">CRITICAL ALERTS<b id="sA3">0</b></div>
+    </div>
+    <div class="panel grow"><h3>EVENT LOG</h3><div id="log"></div></div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const LC = ['#1fb6ff', '#ffd23f', '#ff9a2e', '#ff3b3b'];
+const dpr = window.devicePixelRatio || 1;
+const cl = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+let S = null, hist = [], lastLog = '';
+
+function fit(c) {
+  const r = c.getBoundingClientRect();
+  c.width = Math.round(r.width * dpr);
+  c.height = Math.round(r.height * dpr);
+}
+const ro = new ResizeObserver(() => { fit($('ov')); fit($('chart')); drawChart(); });
+ro.observe($('ov')); ro.observe($('chart'));
+
+const es = new EventSource('/events');
+es.onmessage = e => { S = JSON.parse(e.data); render(S); drawOv(S); voiceUpdate(S); };
+es.onerror = () => { $('chCam').className = 'chip bad'; };
+
+/* ---------- controls ---------- */
+function calibrate() { fetch('/api/calibrate', { method: 'POST' }); }
+$('cbtn').onclick = calibrate;
+$('btnSet').onclick = e => { e.stopPropagation(); $('menu').classList.toggle('open'); };
+document.addEventListener('click', () => $('menu').classList.remove('open'));
+$('miCal').onclick = calibrate;
+$('miVoice').onclick = e => {
+  e.stopPropagation();
+  voiceOn = !voiceOn;
+  if (!voiceOn && window.speechSynthesis) speechSynthesis.cancel();
+  try { localStorage.setItem('voice', voiceOn ? 'on' : 'off'); } catch (x) {}
+  showVoice();
+};
+$('miTest').onclick = () => say('DriveSense voice alerts active.', true);
+addEventListener('keydown', e => {
+  if (e.code === 'Space' && S && S.mode === 'WAITING') { e.preventDefault(); calibrate(); }
+  if (e.key === 'c' || e.key === 'C') calibrate();
+});
+setInterval(() => { $('clock').textContent = new Date().toLocaleTimeString('en-GB'); }, 1000);
+
+/* ---------- voice alerts ---------- */
+const VOICE = {
+  1: { alert: 'Early fatigue detected!', every: 20,
+       tips: ['Sit upright.', 'Stay alert.', 'Take a deep breath.', 'Consider taking a break.'] },
+  2: { alert: 'Wake up! Keep your eyes on the road!', every: 10,
+       tips: ['Wake up! Keep your eyes on the road!'] },
+  3: { alert: 'Wake up! Pull over when safe!', every: 0,
+       tips: ['Wake up! Pull over when safe!'] }
+};
+const LOST = 'Driver not detected. Please face the camera.';
+let voiceOn = true;
+try { voiceOn = localStorage.getItem('voice') !== 'off'; } catch (x) {}
+let vl = 0, vTick = 0, vIdx = 0, gate = 0;
+function showVoice() {
+  const b = $('vState');
+  b.textContent = voiceOn ? 'ON' : 'OFF';
+  b.className = voiceOn ? '' : 'off';
+}
+showVoice();
+function say(t, urgent) {
+  if (!voiceOn || !window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(t);
+  u.lang = 'en-US'; u.rate = 0.95;
+  if (urgent) { speechSynthesis.cancel(); gate = performance.now() + 60; }
+  const wait = gate - performance.now();
+  if (wait > 0) setTimeout(() => speechSynthesis.speak(u), wait);
+  else speechSynthesis.speak(u);
+}
+function voiceUpdate(s) {
+  const lvl = s.mode === 'MONITORING' ? s.level : 0, now = Date.now(), v = VOICE[lvl];
+  const lost = s.reason === 'DRIVER NOT DETECTED';
+  const busy = window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending);
+  if (lvl > vl) {
+    vIdx = 0; vTick = now;
+    if (lost) say(LOST, true);
+    else {
+      say(v.alert, true);
+      if (lvl === 1) say(v.tips[vIdx++ % v.tips.length]);
+    }
+  } else if (lvl < vl) {
+    vIdx = 0; vTick = now;
+    if (lvl >= 2) say(lost ? LOST : v.alert, true);
+    else if (vl >= 2) say('Stay alert.', true);
+  } else if (lvl > 0 && now - vTick >= v.every * 1000 && !busy) {
+    vTick = now;
+    say(lost ? LOST : v.tips[vIdx++ % v.tips.length]);
+  }
+  vl = lvl;
+}
+
+/* ---------- bouncing warning card ---------- */
+const bn = $('banner');
+let bx = 30, by = 30, vx = 80, vy = 60, bt = 0, bOn = false;
+function setBanner(on, txt) {
+  if (on && bn.textContent !== txt) bn.textContent = txt;
+  if (on && !bOn) { bOn = true; bn.style.display = 'block'; bt = performance.now(); requestAnimationFrame(bounce); }
+  else if (!on && bOn) { bOn = false; bn.style.display = 'none'; }
+}
+function bounce(ts) {
+  if (!bOn) return;
+  const dt = Math.min(0.05, (ts - bt) / 1000); bt = ts;
+  const p = bn.parentElement, W = p.clientWidth - bn.offsetWidth, H = p.clientHeight - bn.offsetHeight;
+  bx += vx * dt; by += vy * dt;
+  if (bx < 0) { bx = 0; vx = Math.abs(vx); } else if (bx > W) { bx = W; vx = -Math.abs(vx); }
+  if (by < 0) { by = 0; vy = Math.abs(vy); } else if (by > H) { by = H; vy = -Math.abs(vy); }
+  bn.style.transform = `translate(${bx}px,${by}px)`;
+  requestAnimationFrame(bounce);
+}
+
+/* ---------- render ---------- */
+function render(s) {
+  const mon = s.mode === 'MONITORING';
+  document.body.dataset.l = mon ? s.level : 0;
+  $('chCam').className = 'chip ' + (s.mode === 'ERROR' ? 'bad' : 'ok');
+  $('chTrk').className = 'chip ' + (s.face ? 'ok' : 'bad');
+  $('chFps').textContent = s.fps + ' FPS';
+
+  $('vEar').textContent = s.ear.toFixed(3);
+  const open = s.cal ? s.cal.ear_open * 1.15 : 0.35;
+  $('bEar').style.width = cl(s.ear / open) * 100 + '%';
+  $('mEar').style.left = s.cal ? cl(s.cal.ear_thr / open) * 100 + '%' : '-10px';
+  $('vPer').textContent = s.perclos + '%';
+  $('vClo').textContent = s.closure_s.toFixed(1) + 's';
+  $('vLb').textContent = s.long_blinks;
+
+  $('vMar').textContent = s.mar.toFixed(3);
+  $('bMar').style.width = cl(s.mar) * 100 + '%';
+  $('mMar').style.left = s.thr.yawn_mar * 100 + '%';
+  $('vYaw').textContent = s.yawns;
+
+  const dp = s.pitch - (s.cal ? s.cal.pitch_base : 0);
+  $('vPit').textContent = (dp >= 0 ? '+' : '') + dp.toFixed(0) + '°';
+  $('bPit').style.left = (cl(dp, -30, 30) + 30) / 60 * 100 + '%';
+  $('mPit').style.left = (s.thr.nod_deg + 30) / 60 * 100 + '%';
+  $('vYw').textContent = s.yaw.toFixed(0) + '°';
+  $('vRl').textContent = s.roll.toFixed(0) + '°';
+  $('vNod').textContent = s.nods;
+  $('vHd').textContent = s.head_down_s.toFixed(1) + 's';
+
+  $('sc').textContent = mon ? Math.round(s.score) : '--';
+  $('sbar').style.width = (mon ? s.score : 0) + '%';
+  $('lv').textContent = mon ? s.level_name : (s.mode === 'ERROR' ? 'CAMERA ERROR' : 'NOT CALIBRATED');
+  $('rs').textContent = mon ? (s.level > 0 ? s.reason : 'ALL CLEAR') : '';
+
+  setBanner(mon && s.level > 0, s.level_name + ' // ' + s.reason);
+
+  $('calbox').style.display = mon ? 'none' : 'block';
+  if (!mon) {
+    $('cmsg').textContent = s.mode === 'ERROR' ? s.error : s.cal_msg;
+    $('cprog').style.width = s.cal_progress * 100 + '%';
+    $('cprogw').style.display = s.cal_phase === 'WAIT' ? 'none' : 'block';
+    $('cbtn').style.display = (s.cal_phase === 'WAIT' && s.mode !== 'ERROR') ? 'inline-block' : 'none';
+  }
+
+  $('sEl').textContent = new Date(s.session.elapsed * 1000).toISOString().substr(11, 8);
+  $('sPk').textContent = s.session.peak;
+  $('sA1').textContent = s.session.alerts[1];
+  $('sA2').textContent = s.session.alerts[2];
+  $('sA3').textContent = s.session.alerts[3];
+
+  const j = JSON.stringify(s.events);
+  if (j !== lastLog) {
+    lastLog = j;
+    $('log').innerHTML = s.events.slice().reverse()
+      .map(e => `<div class="l${e.level}"><span>${e.t}</span> ${e.text}</div>`).join('');
+  }
+}
+
+function drawOv(s) {
+  const c = $('ov'), x = c.getContext('2d'), W = c.width, H = c.height;
+  x.clearRect(0, 0, W, H);
+  if (!s.lm) return;
+  const mon = s.mode === 'MONITORING';
+  const col = LC[mon ? s.level : 0];
+  const L = s.lm;
+  let [x0, y0, x1, y1] = L.box;
+  x0 *= W; x1 *= W; y0 *= H; y1 *= H;
+  const k = Math.min(x1 - x0, y1 - y0) * 0.16;
+  x.strokeStyle = col; x.lineWidth = 2 * dpr; x.shadowColor = col; x.shadowBlur = 8 * dpr;
+  x.beginPath();
+  [[x0, y0, 1, 1], [x1, y0, -1, 1], [x0, y1, 1, -1], [x1, y1, -1, -1]].forEach(([px, py, dx, dy]) => {
+    x.moveTo(px + dx * k, py); x.lineTo(px, py); x.lineTo(px, py + dy * k);
+  });
+  x.stroke();
+  x.shadowBlur = 0;
+
+  // eyes and mouth: thin, almost invisible
+  const closed = s.cal && s.ear < s.cal.ear_thr;
+  x.lineWidth = 0.9 * dpr;
+  x.lineJoin = 'round';
+  x.strokeStyle = closed ? 'rgba(255,59,59,.65)' : 'rgba(170,225,255,.42)';
+  [L.le, L.re].forEach(eye => {
+    x.beginPath();
+    eye.forEach((p, i) => i ? x.lineTo(p[0] * W, p[1] * H) : x.moveTo(p[0] * W, p[1] * H));
+    x.closePath(); x.stroke();
+  });
+  x.strokeStyle = s.mar > s.thr.yawn_mar ? 'rgba(255,154,46,.7)' : 'rgba(170,225,255,.42)';
+  const m = L.mo, order = [0, 2, 1, 3];
+  x.beginPath();
+  order.forEach((i, n) => n ? x.lineTo(m[i][0] * W, m[i][1] * H) : x.moveTo(m[i][0] * W, m[i][1] * H));
+  x.closePath(); x.stroke();
+}
+
+setInterval(() => {
+  if (!S) return;
+  hist.push(S.mode === 'MONITORING' ? S.score : 0);
+  if (hist.length > 240) hist.shift();
+  drawChart();
+}, 500);
+
+function drawChart() {
+  const c = $('chart'), x = c.getContext('2d'), W = c.width, H = c.height;
+  x.clearRect(0, 0, W, H);
+  const y = v => H - (v / 100) * H;
+  [[30, '#ffd23f'], [55, '#ff9a2e'], [80, '#ff3b3b']].forEach(([v, col]) => {
+    x.strokeStyle = col + '66'; x.lineWidth = 1; x.setLineDash([4 * dpr, 4 * dpr]);
+    x.beginPath(); x.moveTo(0, y(v)); x.lineTo(W, y(v)); x.stroke();
+  });
+  x.setLineDash([]);
+  if (hist.length < 2) return;
+  const col = LC[S && S.mode === 'MONITORING' ? S.level : 0];
+  const st = W / 239;
+  const px = i => W - (hist.length - 1 - i) * st;
+  x.beginPath();
+  hist.forEach((v, i) => i ? x.lineTo(px(i), y(v)) : x.moveTo(px(i), y(v)));
+  x.strokeStyle = col; x.lineWidth = 2 * dpr; x.stroke();
+  x.lineTo(W, H); x.lineTo(px(0), H); x.closePath();
+  x.fillStyle = col + '22'; x.fill();
+}
+</script>
+</body>
+</html>
