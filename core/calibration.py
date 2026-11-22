@@ -1,9 +1,9 @@
 import json
 from dataclasses import dataclass, asdict
-from pathlib import Path
 import numpy as np
+from core.paths import data_dir
 
-CAL_PATH = Path("config/calibration.json")
+CAL_PATH = data_dir() / "calibration.json"
 
 
 @dataclass

@@ -1,11 +1,53 @@
 {
   "name": "drivesense",
-  "version": "0.3.0",
+  "productName": "DriveSense",
+  "version": "0.1.0",
+  "description": "Real-time driver fatigue and drowsiness detection",
+  "author": "T-actician",
   "main": "desktop/main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build:backend": ".venv\\Scripts\\pyinstaller --noconfirm --onedir --name drivesense-server --distpath build-backend --workpath build-tmp --collect-all mediapipe --collect-submodules uvicorn --add-data \"ui\\web;ui\\web\" --add-data \"models;models\" server.py",
+    "dist": "npm run build:backend && electron-builder --win --publish never"
+  },
+  "build": {
+    "appId": "com.tactician.drivesense",
+    "productName": "DriveSense",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "desktop/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build-backend/drivesense-server",
+        "to": "backend"
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "T-actician",
+        "repo": "DriveSense"
+      }
+    ]
   },
   "devDependencies": {
-    "electron": "^45.3.1"
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
   }
 }

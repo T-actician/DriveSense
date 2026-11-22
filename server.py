@@ -1,10 +1,10 @@
 import argparse
 import asyncio
 import json
-from pathlib import Path
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse, StreamingResponse
+from core.paths import resource_path
 from core.pipeline import Pipeline
 
 ap = argparse.ArgumentParser()
@@ -15,7 +15,7 @@ args = ap.parse_args()
 pipe = Pipeline(args.cam)
 pipe.start()
 app = FastAPI()
-INDEX = Path(__file__).parent / "ui" / "web" / "index.html"
+INDEX = resource_path("ui/web/index.html")
 
 
 @app.get("/")

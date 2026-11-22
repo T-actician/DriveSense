@@ -8,3 +8,7 @@ build/
 *.log
 .env
 config/calibration.json
+*.spec
+build-backend/
+build-tmp/
+desktop.ini
